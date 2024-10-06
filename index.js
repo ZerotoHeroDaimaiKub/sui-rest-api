@@ -1,15 +1,17 @@
- // RESTful CRUD API with Node.js, Express, and MySQL for CJStreetwear
+// RESTful CRUD API with Node.js, Express, and MySQL for CJStreetwear
 
 // Import required modules
 const express = require('express');
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 // Create an instance of Express
 const app = express();
 
 // Middleware to parse JSON data
 app.use(bodyParser.json());
+app.use(cors());
 
 // Create a MySQL connection
 const db = mysql.createConnection({
@@ -50,15 +52,17 @@ app.get('/products', (req, res) => {
     });
 });
 
-// Retrieve a specific product by ID (Read)
 app.get('/products/:id', (req, res) => {
     const { id } = req.params;
     const sql = 'SELECT * FROM Product WHERE ProductID = ?';
     db.query(sql, [id], (err, result) => {
         if (err) {
-            return res.status(500).send(err);
+            return res.status(500).json({ error: err.message });
         }
-        res.json(result);
+        if (result.length === 0) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        res.json(result[0]);
     });
 });
 
@@ -88,7 +92,7 @@ app.delete('/products/:id', (req, res) => {
 });
 
 // Start the server
-const PORT = 3000;
+const PORT = 4000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
